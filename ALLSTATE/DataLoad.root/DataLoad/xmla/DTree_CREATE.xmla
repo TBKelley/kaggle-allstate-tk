@@ -1,0 +1,156 @@
+<Create xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+    <ParentObject>
+        <DatabaseID>TITANIC SSAS</DatabaseID>
+        <MiningStructureID>WRK_Data</MiningStructureID>
+    </ParentObject>
+    <ObjectDefinition>
+        <MiningModel xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400">
+            <ID>DTree</ID>
+            <Name>DTree</Name>
+            <Algorithm>Microsoft_Decision_Trees</Algorithm>
+            <AlgorithmParameters>
+                <AlgorithmParameter>
+                    <Name>COMPLEXITY_PENALTY</Name>
+                    <Value xsi:type="xsd:double">0.5</Value>
+                </AlgorithmParameter>
+            </AlgorithmParameters>
+            <Columns>
+                <Column>
+                    <ID>Actual</ID>
+                    <Name>Actual</Name>
+                    <SourceColumnID>Actual</SourceColumnID>
+                    <Usage>PredictOnly</Usage>
+                </Column>
+                <Column>
+                    <ID>Age FLOAT</ID>
+                    <Name>Age FLOAT</Name>
+                    <SourceColumnID>Age FLOAT</SourceColumnID>
+                    <ModelingFlags>
+                        <ModelingFlag>REGRESSOR</ModelingFlag>
+                    </ModelingFlags>
+                </Column>
+                <Column>
+                    <ID>Children</ID>
+                    <Name>Children</Name>
+                    <SourceColumnID>Children</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Data ID</ID>
+                    <Name>Data ID</Name>
+                    <SourceColumnID>Data ID</SourceColumnID>
+                    <Usage>Key</Usage>
+                </Column>
+                <Column>
+                    <ID>Dept Code Hash</ID>
+                    <Name>Dept Code Hash</Name>
+                    <SourceColumnID>Dept Code Hash</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Has Child</ID>
+                    <Name>Has Child</Name>
+                    <SourceColumnID>Has Child</SourceColumnID>
+                    <Usage>Predict</Usage>
+                </Column>
+                <Column>
+                    <ID>Has Family</ID>
+                    <Name>Has Family</Name>
+                    <SourceColumnID>Has Family</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Has Parent</ID>
+                    <Name>Has Parent</Name>
+                    <SourceColumnID>Has Parent</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Has Sibling</ID>
+                    <Name>Has Sibling</Name>
+                    <SourceColumnID>Has Sibling</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Has Spouse</ID>
+                    <Name>Has Spouse</Name>
+                    <SourceColumnID>Has Spouse</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Is Adult</ID>
+                    <Name>Is Adult</Name>
+                    <SourceColumnID>Is Adult</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Is Child</ID>
+                    <Name>Is Child</Name>
+                    <SourceColumnID>Is Child</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Parents</ID>
+                    <Name>Parents</Name>
+                    <SourceColumnID>Parents</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Pclass</ID>
+                    <Name>Pclass</Name>
+                    <SourceColumnID>Pclass</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Salutation Hash</ID>
+                    <Name>Salutation Hash</Name>
+                    <SourceColumnID>Salutation Hash</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Sex INT</ID>
+                    <Name>Sex INT</Name>
+                    <SourceColumnID>Sex INT</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Sibling</ID>
+                    <Name>Sibling</Name>
+                    <SourceColumnID>Sibling</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Embarked INT</ID>
+                    <Name>Embarked INT</Name>
+                    <SourceColumnID>Embarked INT</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Deck Hash</ID>
+                    <Name>Deck Hash</Name>
+                    <SourceColumnID>Deck Hash</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Dual Occupant</ID>
+                    <Name>Dual Occupant</Name>
+                    <SourceColumnID>Dual Occupant</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Other Survivers</ID>
+                    <Name>Other Survivers</Name>
+                    <SourceColumnID>Other Survivers</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Has Other Surviver</ID>
+                    <Name>Has Other Surviver</Name>
+                    <SourceColumnID>Has Other Surviver</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Fare FLOAT</ID>
+                    <Name>Fare FLOAT</Name>
+                    <SourceColumnID>Fare FLOAT</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Has Other Died</ID>
+                    <Name>Has Other Died</Name>
+                    <SourceColumnID>Has Other Died</SourceColumnID>
+                </Column>
+                <Column>
+                    <ID>Other Died</ID>
+                    <Name>Other Died</Name>
+                    <SourceColumnID>Other Died</SourceColumnID>
+                </Column>
+            </Columns>
+            <AllowDrillThrough>true</AllowDrillThrough>
+            <Language>1033</Language>
+            <Collation>Latin1_General_CI_AS</Collation>
+        </MiningModel>
+    </ObjectDefinition>
+</Create>
+
