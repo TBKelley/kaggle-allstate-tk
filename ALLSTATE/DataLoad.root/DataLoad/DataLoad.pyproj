@@ -32,7 +32,9 @@
   <ItemGroup>
     <Compile Include="ConnectionSQL.py" />
     <Compile Include="Context.py" />
+    <Compile Include="DecisionTreeClassifierMultiClass.py" />
     <Compile Include="FeatureAnalysis.py" />
+    <Compile Include="LoadCleanup.py" />
     <Compile Include="LoadCross.py" />
     <Compile Include="LoadTest.py" />
     <Compile Include="LoadTrain.py" />
@@ -46,7 +48,8 @@
     <Compile Include="OptimiseModelParameters.py" />
     <Compile Include="OutputPredictions.py" />
     <Compile Include="PercepronWeights.py" />
-    <Compile Include="PopulateMissingData.py" />
+    <Compile Include="TimeStamp.py" />
+    <Compile Include="WRK_Data_POPULATE.py" />
     <Compile Include="InsertEnsumble_1.py" />
     <Compile Include="PreProcessing.py" />
     <Compile Include="ProcessSSAS.py" />

@@ -2,32 +2,52 @@ class Context(object):
     """
     Program context used to encapulate configuration paramater passing.
     """
-    def __init__(self): 
-        self.__trainCsvUNC = "D:/DEV_2012/KAGGLE/ALLSTATE/DATA/Train_01_Small.csv" # Must use / not \
+    def __init__(self):
+        self.__reloadDatabase = False # Set to True to use cached %Type%_%Matrix%_%Model%.tab, will speed up debugging of model
+        self.__trainCsv = "Train_00_Full.csv" # Must use / not \
         self.__crossCsvUNC = "" # Must use / not \ if "" use validationPct on a random selection of trainCsvUNC
-        self.__testCsvUNC = "D:/DEV_2012/KAGGLE/ALLSTATE/DATA/Test_01_Small.csv" # Must use / not \ if "" use validationPct on a random selection of trainCsvUNC
-        self.__predictionCsvUNC = "D:/DEV_2012/KAGGLE/ALLSTATE/DATA/Prediction.csv" # Must use / not \
-        self.__mssqlInstance = 'Trevor-PC'
+        self.__testCsv = "Test_00_Full.csv" # Must use / not \ if "" use validationPct on a random selection of trainCsvUNC
+
+        self.__cacheFolderUNC = "C:/DEV_2010/KAGGLE/ALLSTATE/DATA_Cache/" # Must use / not \
+        self.__submissionFolderUNC = "C:/DEV_2010/KAGGLE/ALLSTATE/DATA_Submission/" # Must use / not \
+        self.__dataFolderUNC = "C:/DEV_2010/KAGGLE/ALLSTATE/DATA/" # Must use / not \ location of Kaggle train, test .csv file
+        self.__mssqlInstance = 'AU29543'
         self.__mssqlDatabase = 'ALLSTATE'
         self.__mssqlUser = 'sa'
         self.__mssqlPassword = 'sa123'
-        self.__ssasInstance = 'Trevor-PC'
+        self.__ssasInstance = 'AU29543\MULTIDIM'
+
+    @property
+    def ReloadDatabase(self):
+        return self.__reloadDatabase
+
+    @property
+    def CacheFolderUNC(self):
+        return self.__cacheFolderUNC
+
+    @property
+    def SubmissionFolderUNC(self):
+        return self.__submissionFolderUNC
+
+    @property
+    def DataFolderUNC(self):
+        return self.__dataFolderUNC
 
     @property
     def TrainCsvUNC(self):
-        return self.__trainCsvUNC
+        return self.DataFolderUNC + self.__trainCsv
 
     @property
     def CrossCsvUNC(self):
-        return self.__crossCsvUNC
+        return self.DataFolderUNC + self.__crossCsvUNC
 
     @property
     def TestCsvUNC(self):
-        return self.__testCsvUNC
+        return self.DataFolderUNC + self.__testCsvUNC
 
     @property
     def PredictionCsvUNC(self):
-        return self.__predictionCsvUNC
+        return self.__submissionFolderUNC + "Prediction.csv"
 
     @property
     def FileCsvUNC(self):
@@ -52,6 +72,7 @@ class Context(object):
     @property
     def SsasInstance(self):
         return self.__ssasInstance
+
 
 
 

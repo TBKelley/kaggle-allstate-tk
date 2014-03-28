@@ -20,13 +20,13 @@ SET NOCOUNT ON -- Required for VBA
 
 SELECT
  [Model]
-,[PassengerId]
+,[CustomerId]
 ,[Predicted]
 ,[Probablity]
 FROM [dbo].[DRV_Predict_vw]
 WHERE [Model] = @Model
   AND [DataType] = 3 -- Test
-ORDER BY [Model], [PassengerId]
+ORDER BY [Model], [CustomerId]
 
 GO
 
@@ -35,6 +35,7 @@ GO
 
 /*****************************************************
 -- UNIT TEST CASES
+EXEC dbo.DRV_Predict_LOAD_sp @Model='Base'
 EXEC dbo.DRV_Predict_LOAD_sp @Model='RandomForest'
 EXEC dbo.DRV_Predict_LOAD_sp @Model='Perceptron'
 *****************************************************/

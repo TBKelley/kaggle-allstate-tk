@@ -36,11 +36,11 @@ def Execute(context):
 
     # 0=DataID, 1=Actual, 2=Base, ...
     # Load Training Data and Cross Validation Data
-    train_X, train_Y, train_DataID = __GetFeaturesAndResults(context=context, connectionSQL=connectionSQL, dataType="Train", PreProcessDataFrame=__PreProcessDataFrame)
+    train_X, train_Y, train_DataID = __GetFeaturesAndResults(context=context, connectionSQL=connectionSQL, dataType="Train", preProcessDataFrame=__PreProcessDataFrame)
     train_DataID = None
 
     # Load Cross Validation Data
-    cross_X, cross_Y, cross_DataID = __GetFeaturesAndResults(context=context, connectionSQL=connectionSQL, dataType="Cross", PreProcessDataFrame=__PreProcessDataFrame)
+    cross_X, cross_Y, cross_DataID = __GetFeaturesAndResults(context=context, connectionSQL=connectionSQL, dataType="Cross", preProcessDataFrame=__PreProcessDataFrame)
     cross_DataID = None
 
     if (__optimiseParameters):
@@ -90,7 +90,7 @@ def Execute(context):
     print ''
 
     # UPDATE DRV_Predict with all data predictions.
-    all_X, all_Y, all_DataID = __GetFeaturesAndResults(context=context, connectionSQL=connectionSQL, dataType="ALL", PreProcessDataFrame=__PreProcessDataFrame)
+    all_X, all_Y, all_DataID = __GetFeaturesAndResults(context=context, connectionSQL=connectionSQL, dataType="ALL", preProcessDataFrame=__PreProcessDataFrame)
     all_Y = None
     connectionSQL.Update_DRV_Predict(modelName=__modelName, model=model, all_X=all_X, all_DataID=all_DataID)
 

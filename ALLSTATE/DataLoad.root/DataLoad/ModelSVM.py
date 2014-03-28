@@ -27,11 +27,11 @@ def Execute(context):
 
     # 0=DataID, 1=Actual, 2=Pclass, ...
     # Load Training Data and Cross Validation Data
-    train_X, train_Y, train_DataID = connectionSQL.GetFeaturesAndResults(featuresColumns=__featuresColumns, dataType="Train", PreProcessDataFrame=__PreProcessDataFrame)
+    train_X, train_Y, train_DataID = connectionSQL.GetFeaturesAndResults(featuresColumns=__featuresColumns, dataType="Train", preProcessDataFrame=__PreProcessDataFrame)
     train_DataID = None
 
     # Load Cross Validation Data
-    cross_X, cross_Y, cross_DataID = connectionSQL.GetFeaturesAndResults(featuresColumns=__featuresColumns, dataType="Cross", PreProcessDataFrame=__PreProcessDataFrame)
+    cross_X, cross_Y, cross_DataID = connectionSQL.GetFeaturesAndResults(featuresColumns=__featuresColumns, dataType="Cross", preProcessDataFrame=__PreProcessDataFrame)
     cross_DataID = None
 
     if (__optimiseParameters):
@@ -102,7 +102,7 @@ def Execute(context):
     SharedLibrary.CrossValidation(modelName=__modelName, clf=clf, dfX=train_X, dfY=train_Y, n_fold=5)
 
     # UPDATE DRV_Predict with all data predictions.
-    all_X, all_Y, all_DataID = connectionSQL.GetFeaturesAndResults(featuresColumns=__featuresColumns, dataType="ALL", PreProcessDataFrame=__PreProcessDataFrame)
+    all_X, all_Y, all_DataID = connectionSQL.GetFeaturesAndResults(featuresColumns=__featuresColumns, dataType="ALL", preProcessDataFrame=__PreProcessDataFrame)
     all_Y = None
     connectionSQL.Update_DRV_Predict(modelName=__modelName, model=model, all_X=all_X, all_DataID=all_DataID)
 

@@ -1,9 +1,17 @@
 #!/usr/bin/python
 import argparse
+import LoadCleanup
 import LoadTrain
 import LoadCross
 import LoadTest
-import PopulateMissingData
+import WRK_Data_POPULATE
+import ModelBase
+import ModelDecisionTree
+import ModelDecisionTreeAdaBoost
+import ModelRandomForest
+import ModelSVM
+import ProcessSSAS
+import ModelSSAS
 import FeatureAnalysis
 import InsertEnsumble_1
 import PercepronWeights
@@ -13,10 +21,13 @@ from Context import Context
 if __name__ == '__main__':
     context = Context()
     seed = 0
-    reloadDatabase = True
+    reloadDatabase = context.ReloadDatabase
     validationPct = 0.2 # Percent of training data to be used for cross validation. 0.2 if you are not using CrossCsvUNC
 
     if (reloadDatabase):
+        print ''
+        print '---- Preload Cleanup ----'
+        LoadCleanup.Execute(context) 
         print ''
         print '---- LoadTrain ----'
         LoadTrain.Execute(context, seed, validationPct) # 
@@ -27,21 +38,18 @@ if __name__ == '__main__':
         print '---- LoadTest ----'
         LoadTest.Execute(context)
         print ''
-        print '---- Populate Missing & Derived Data ----'
-        PopulateMissingData.Execute(context)
+        print '---- Populate WRK_DATA and WRK_Customer, Missing & Derived Data ----'
+        WRK_Data_POPULATE.Execute(context)
 
     print ''
     print '---- ModelBase ----'
-    #modelName, featureImportanceHistogram = ModelBase.Execute(context)
-    print ''
-    print '---- FeatureAnalysis - ModelBase ----'
-    #FeatureAnalysis.Execute(modelName, featureImportanceHistogram)
+    #ModelBase.Execute(context)
     print ''
     print '---- ModelDecisionTree ----'
-    #modelName, featureImportanceHistogram = ModelDecisionTree.Execute(context)
+    modelName, featureImportanceHistogram = ModelDecisionTree.Execute(context)
     print ''
     print '---- FeatureAnalysis - ModelDecisionTree ----'
-    #FeatureAnalysis.Execute(modelName, featureImportanceHistogram)
+    FeatureAnalysis.Execute(modelName, featureImportanceHistogram)
     print ''
     print '---- ModelDecisionTreeAdaBoost ----'
     #modelName, featureImportanceHistogram = ModelDecisionTreeAdaBoost.Execute(context)
@@ -70,12 +78,15 @@ if __name__ == '__main__':
     print '---- PercepronWeights ----'
     #modelName = PercepronWeights.Execute(context)
     print '---- OutputPredictions ----'
+    OutputPredictions.Execute(context, 'Base')
+    OutputPredictions.Execute(context, 'DecisionTree')
     #OutputPredictions.Execute(context, 'RandomForest')
     #OutputPredictions.Execute(context, 'Ensemble')
     #OutputPredictions.Execute(context, 'DTree')
     #OutputPredictions.Execute(context, 'LogisticR')
     #OutputPredictions.Execute(context, 'NNetwork')
     #OutputPredictions.Execute(context, 'Perceptron')
+    pass
 
 
 

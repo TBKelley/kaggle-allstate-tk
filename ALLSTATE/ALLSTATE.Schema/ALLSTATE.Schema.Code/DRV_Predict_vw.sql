@@ -14,7 +14,7 @@ CREATE VIEW [dbo].[DRV_Predict_vw] AS
 
 SELECT
  [DRV_Predict].[Model]
-,[RAW_Data].[PassengerId]
+,[RAW_Data].[CustomerId]
 ,[DRV_Predict].[Predicted]
 ,[DRV_Predict].[Probablity]
 ,[RAW_Data].[DataType]
@@ -30,5 +30,6 @@ GO
 /*****************************************************
 -- UNIT TEST CASES
 SELECT * FROM [dbo].[DRV_Predict_vw]
+SELECT * FROM [dbo].[DRV_Predict_vw] WHERE [Model]='Base' AND [DataType]=3
 SELECT * FROM [dbo].[DRV_Predict_vw] WHERE [Model]='Perceptron'
 *****************************************************/

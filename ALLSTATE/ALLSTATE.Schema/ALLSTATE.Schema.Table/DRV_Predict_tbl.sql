@@ -15,7 +15,7 @@ CREATE TABLE dbo.DRV_Predict
      [PredictID] INT IDENTITY(10,1) NOT NULL -- Set SEED>1 if predefined records
     ,[Model] VARCHAR(50) NOT NULL   -- Business key, Learning model
     ,[DataID]  INT NOT NULL         -- Business key, Foreign key to RAW_Data.
-    ,[Predicted] BIT NOT NULL       -- Predicted value
+    ,[Predicted] VARCHAR(7) NOT NULL -- Predicted value. ABCDEFG. Example: '0032003'
     ,[Probablity] FLOAT NOT NULL    -- Probability of [Predicted]=1
 )
 GO

@@ -13,20 +13,22 @@ def Execute(context, Model):
     # Columns: Model,PassengerId,Predicted,Probablity
     rows = connectionSQL.GetRowsDictFromSelect("EXEC dbo.DRV_Predict_LOAD_sp @Model='" + Model + "'")
 
+
     # Write out header
-    # Survived,PassengerId
+    # customer_ID,plan
     resultRow = []
-    resultRow.append('Survived')
-    resultRow.append('PassengerId')
+    resultRow.append('customer_ID')
+    resultRow.append('plan')
     fileCsv.writerow(resultRow)
 
     for row in rows:
-        Survived = row['Predicted']
-        PassengerId = row['PassengerId']
+        customer_ID = row['CustomerId']
+        plan = row['Predicted']
 
         resultRow = []
-        resultRow.append(int(Survived))
-        resultRow.append(PassengerId)
+        resultRow.append(customer_ID)
+        resultRow.append(plan)
+
         fileCsv.writerow(resultRow)
 
     print 'Output submition file rows=' + str(len(rows)) + ' to ' + fileCsvUNC

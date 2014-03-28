@@ -12,7 +12,8 @@ History:
 **************************************************/
 CREATE TABLE dbo.WRK_Data 
 (
-     [DataID]  INT NOT NULL         -- Foreign key to RAW_Data
+     [DataID]  INT NOT NULL             -- Foreign key to RAW_Data
+    ,[P_DataID] INT NOT NULL DEFAULT 0  -- Purchase_pt DataId, Foreign key to RAW_Data
 )
 GO
 

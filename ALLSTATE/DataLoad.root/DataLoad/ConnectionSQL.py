@@ -1,7 +1,12 @@
+import os.path
 import csv as csv
+import math
 import numpy as np
 import pymssql
+import pandas as pd
 import pandas.io.sql as sql
+from sklearn import preprocessing
+from TimeStamp import TimeStamp
 import SharedLibrary
 import Context
 
@@ -9,12 +14,17 @@ class ConnectionSQL(object):
     """
     Connection class used to encapulate SQL methods.
     """
-    def __init__(self, context): 
+    def __init__(self, context):
+        self.__cacheFolderUNC = context.CacheFolderUNC
         self.__mssqlInstance = context.MssqlInstance
         self.__mssqlDatabase = context.MssqlDatabase
         self.__mssqlUser = context.MssqlUser
         self.__mssqlPassword = context.MssqlPassword
         self.__batch_size = 1000 # MSSQL Max is 1,000
+
+    @property
+    def CacheFolderUNC(self):
+        return self.__cacheFolderUNC
 
     @property
     def MssqlInstance(self):
@@ -45,9 +55,39 @@ class ConnectionSQL(object):
         conn.commit()
         conn.close()
 
+    def ExecuteAuoCommit(self, sql):
+        conn = self.Connect()
+        conn.autocommit(True)
+        cur = self.Cursor(conn)
+        print sql
+        cur.execute(sql)
+        conn.autocommit(False)
+        conn.close()
+
     # TRUNCATE MSSQL TableName, resetting any INT IDENTITY(Start,Increment)
     def TruncateTable(self, TableName):
         self.Execute("TRUNCATE TABLE " + TableName)
+
+    # Execute SelectSql and return a list of first column values
+    # SelectSql = list of values Example: 'SELECT [State] FROM [RAW_Data] GROUP BY [State] ORDER BY [State]' Only first column is added to list
+    # Returns a list of values ['AL', 'AR', 'CO', 'CT', 'DC', 'DE', ...]
+    def GetValueListFromSelect(self, SelectSql):      
+        conn = self.Connect()
+        cur = self.Cursor(conn)
+
+        print SelectSql
+        cur.execute(SelectSql)
+        print 'FetchAll rows'
+        rows = cur.fetchall() # Must cache all to avoid connection closing issues in execute(sql)
+        print '  Rows read = ' + str(len(rows))
+        conn.close()
+
+        valueList = []
+        for row in rows:
+            valueList = valueList + [row[0]]
+
+        print valueList
+        return valueList
 
     # Execute SelectSql and retuen a list of row tuplets
     # Returns a list of row tuplets [(10, 3, 80, 0, 1.0), (11, 2, 82, 1, 2.0), ...]
@@ -59,7 +99,7 @@ class ConnectionSQL(object):
         cur.execute(SelectSql)
         print 'FetchAll rows'
         rows = cur.fetchall() # Must cache all to avoid connection closing issues in execute(sql)
-        print '  Rows cached = ' + str(len(rows))
+        print '  Rows read = ' + str(len(rows))
         conn.close()
         return rows
 
@@ -73,7 +113,7 @@ class ConnectionSQL(object):
         cur.execute(SelectSql)
         print 'FetchAll rows'
         rows = cur.fetchall() # Must cache all to avoid connection closing issues in execute(sql)
-        print '  Rows cached = ' + str(len(rows))
+        print '  Rows read = ' + str(len(rows))
         conn.close()
         return rows
 
@@ -84,7 +124,7 @@ class ConnectionSQL(object):
         print SelectSql
         df = sql.read_frame(SelectSql, conn)
         
-        print '  Rows cached = ' + str(df.shape[0])
+        print '  Rows read = ' + str(df.shape[0])
         conn.close()
         return df
 
@@ -100,6 +140,7 @@ class ConnectionSQL(object):
         insert_header = "INSERT " + mssqlTable + " (" + mssqlColumns + ") VALUES\n"
         conn = self.Connect()
         cur = self.Cursor(conn)
+        timeStamp = TimeStamp()
 
         print 'Open ' + fileCsvUNC
         fileCsv = csv.reader(open(fileCsvUNC, 'rb'))
@@ -152,7 +193,8 @@ class ConnectionSQL(object):
                 raise
 
         conn.close()
-        print 'DONE... ' + str(row_counter) + ' rows inserted into [' + self.MssqlInstance + '].[' + self.MssqlDatabase + '].' + mssqlTable
+
+        print 'DONE... ' + str(row_counter) + ' rows inserted into [' + self.MssqlInstance + '].[' + self.MssqlDatabase + '].' + mssqlTable + ' Elaspe=' + timeStamp.Elaspse
         print ''
 
     # INSERT rows to an MSSQL table defined by RowHeader and rows formatted by FunctProcessRow
@@ -163,6 +205,7 @@ class ConnectionSQL(object):
     def Loop_INSERT(self, rows, RowHeader, FunctProcessRow, paramDict=None):
         conn = self.Connect()
         cur = self.Cursor(conn)
+        timeStamp = TimeStamp()
 
         batch_size = self.BatchSize
         prefixRow = " "
@@ -209,7 +252,7 @@ class ConnectionSQL(object):
                 raise
 
         conn.close()
-        print 'DONE... ' + str(row_counter) + ' rows inserted.'
+        print 'DONE... ' + str(row_counter) + ' rows inserted. Elaspe=' + timeStamp.Elaspse
         print ''
 
 
@@ -226,7 +269,7 @@ class ConnectionSQL(object):
 
         sql += "'" + modelName + "'"
         sql += "," + str(DataID)
-        sql += "," + str(Predicted)
+        sql += ",'" + Predicted + "'"
         sql += "," + str(Probablity)
 
         return sql
@@ -243,23 +286,78 @@ class ConnectionSQL(object):
 
         rowHeader = "INSERT [dbo].[DRV_Predict] (Model, DataID, Predicted, Probablity) VALUES\n"
     
-        predictAllList = model.predict(all_X)
+        predictAllList = model.predict(all_X) # predictAllList[row 0..n][PredictedLableValue0, PredictedLableValue1, ...] # Multiclass-multilable
 
         hasProbas = False
         try:
-            probasAllMatrix = model.predict_proba(all_X)
-            hasProbas = True
+            if (hasattr(model, 'predict_proba')):
+                #probasAllMatrix = model.predict_proba(all_X) # probasAllMatrix[class 0..6][row 0..n] [P(Lable0), P(Lable1), ...] # Multiclass-multilable
+                probasLogAllMatrix = model.predict_log_proba(all_X) # probasAllMatrix[class 0..6][row 0..n] [P(Lable0), P(Lable1), ...] # Multiclass-multilable
+                hasProbas = True
         except AttributeError:
             pass ## Ignore
 
+        labelEncoderA = preprocessing.LabelEncoder()
+        labelEncoderB = preprocessing.LabelEncoder()
+        labelEncoderC = preprocessing.LabelEncoder()
+        labelEncoderD = preprocessing.LabelEncoder()
+        labelEncoderE = preprocessing.LabelEncoder()
+        labelEncoderF = preprocessing.LabelEncoder()
+        labelEncoderG = preprocessing.LabelEncoder()
+
+        labelEncoderA.fit([0, 1, 2])
+        labelEncoderB.fit([0, 1])
+        labelEncoderC.fit([1, 2, 3, 4])
+        labelEncoderD.fit([1, 2, 3])
+        labelEncoderE.fit([0, 1])
+        labelEncoderF.fit([0, 1, 2, 3])
+        labelEncoderG.fit([1, 2, 3, 4])
+
         rows = []
-        for index in range(len(predictAllList)):
-            DataID = all_DataID[index]
-            Predicted = int(predictAllList[index])
-            Probablity = 0.0
+        for rowIndex in range(len(predictAllList)):
+            dataID = all_DataID['DataID'][rowIndex]
+            predictedList = predictAllList[rowIndex]
+            predicted = ''
+            predicted += str(int(predictedList[0])) # A
+            predicted += str(int(predictedList[1])) # B
+            predicted += str(int(predictedList[2])) # C
+            predicted += str(int(predictedList[3])) # D
+            predicted += str(int(predictedList[4])) # E
+            predicted += str(int(predictedList[5])) # F
+            predicted += str(int(predictedList[6])) # G
+
+            probablity = 0.0
             if (hasProbas):
-                Probablity = probasAllMatrix[index][1]
-            row = [DataID, Predicted, Probablity]
+                lableAIndex = labelEncoderA.transform(predictedList[0])
+                lableBIndex = labelEncoderB.transform(predictedList[1])
+                lableCIndex = labelEncoderC.transform(predictedList[2])
+                lableDIndex = labelEncoderD.transform(predictedList[3])
+                lableEIndex = labelEncoderE.transform(predictedList[4])
+                lableFIndex = labelEncoderF.transform(predictedList[5])
+                lableGIndex = labelEncoderG.transform(predictedList[6])
+
+                probablityLogA = probasLogAllMatrix[0][rowIndex][lableAIndex]
+                probablityLogB = probasLogAllMatrix[1][rowIndex][lableBIndex]
+                probablityLogC = probasLogAllMatrix[2][rowIndex][lableCIndex]
+                probablityLogD = probasLogAllMatrix[3][rowIndex][lableDIndex]
+                probablityLogE = probasLogAllMatrix[4][rowIndex][lableEIndex]
+                probablityLogF = probasLogAllMatrix[5][rowIndex][lableFIndex]
+                probablityLogG = probasLogAllMatrix[6][rowIndex][lableGIndex]
+
+                #probablityA = probasAllMatrix[0][rowIndex][lableAIndex] # For debugging only
+                #probablityB = probasAllMatrix[1][rowIndex][lableBIndex]
+                #probablityC = probasAllMatrix[2][rowIndex][lableCIndex]
+                #probablityD = probasAllMatrix[3][rowIndex][lableDIndex]
+                #probablityE = probasAllMatrix[4][rowIndex][lableEIndex]
+                #probablityF = probasAllMatrix[5][rowIndex][lableFIndex]
+                #probablityG = probasAllMatrix[6][rowIndex][lableGIndex]
+
+                #probablityOld = probablityA * probablityB * probablityC * probablityD * probablityE * probablityF * probablityG # For debugging only
+                probablityLog = probablityLogA + probablityLogB + probablityLogC + probablityLogD + probablityLogE + probablityLogF + probablityLogG
+                probablity = math.exp(probablityLog)
+
+
+            row = [dataID, predicted, probablity]
             rows.append(row)
 
         paramDict = {}
@@ -270,15 +368,16 @@ class ConnectionSQL(object):
 
     # Get Feature Dataform (dfX), Results Series (dfY) and DataID Series (dfDataID)
     # featuresColumns = Example: "Pclass, A_TitleHash"
-    # dataType = "Train"=(1,9), "Cross"=(2), "Test"=(3) or ALL=(*)
+    # dataType = "Train"=(1), "Cross"=(2), "Test"=(3) or ALL=(*)
     # PreProcessDataFrame = Function used to modify and pre-process columns. Signature df=PreProcessDataFrame(df)
     # WARNING: You must get all DataType and filter DataFrame else you will not have the identical columns after OneHotDataframe
     # Called from ModelXxxxx
-    def GetFeaturesAndResults(self, featuresColumns, dataType, PreProcessDataFrame):
-        selectSql = "SELECT DataID, Actual, " + featuresColumns + ", DataType" + " FROM [dbo].[WRK_Train_vw] ORDER BY [WRK_Train_vw].[DataID]"
+    def GetFeaturesAndResults(self, featuresColumns, dataType, preProcessDataFrame=None, viewName='[dbo].[WRK_Train_vw]'):
+        selectSql = "SELECT DataID, P_A,P_B,P_C,P_D,P_E,P_F,P_G, " + featuresColumns + ", DataType" + " FROM " + viewName + " ORDER BY [DataID]"
 
         df = self.GetRowsDataFrameFromSelect(selectSql)
-        df = PreProcessDataFrame(df) # Column manipulation for model
+        if (preProcessDataFrame is not None):
+            df = preProcessDataFrame(df) # Column manipulation for model
 
         # Filter required DataType
         if (dataType == "Train"):
@@ -290,12 +389,54 @@ class ConnectionSQL(object):
 
         df = df.drop(['DataType'], axis=1)
 
-        dfDataID = df['DataID']
-        dfY = df['Actual'].astype(np.float)
-        dfX = df.drop(['DataID', 'Actual'], axis=1).astype(np.float) 
+        dfDataID = df[['DataID']]
+        dfY = df[['P_A', 'P_B', 'P_C', 'P_D', 'P_E', 'P_F', 'P_G']].astype(np.float)
+        dfY.columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+        dfX = df.drop(['DataID', 'P_A', 'P_B', 'P_C', 'P_D', 'P_E', 'P_F', 'P_G'], axis=1).astype(np.float) 
         df = None
         print '  ' + dataType + '_X = ' + str(dfX.shape)
         print '  ' + dataType + '_Y = ' + str(dfY.shape)
         print '  ' + dataType + '_DataID = ' + str(dfDataID.shape)
 
         return (dfX, dfY, dfDataID) 
+
+    # Get Feature Dataform (dfX), Results Series (dfY) and DataID Series (dfDataID) from DATA_Cache otherwise SQL
+    # If cache exists there is no need to access SQL
+    # featuresColumns = Example: "Pclass, A_TitleHash"
+    # dataType = "Train"=(1), "Cross"=(2), "Test"=(3) or ALL=(*)
+    # modelName = "Base"
+    # PreProcessDataFrame = Function used to modify and pre-process columns. Signature df=PreProcessDataFrame(df)
+    # WARNING: You must get all DataType and filter DataFrame else you will not have the identical columns after OneHotDataframe
+    # Called from ModelXxxxx
+    def GetFeaturesAndResultsFromCache(self, featuresColumns, dataType, modelName, preProcessDataFrame, viewName='[dbo].[WRK_Train_vw]'):
+        dfY = self.__GetDataFrameFromCache(dataType, modelName, 'Y') # Assume if Y exists, then the other matrix also exist
+        if (dfY is None):
+            dfX, dfY, dfDataID = self.GetFeaturesAndResults(featuresColumns=featuresColumns, dataType=dataType, preProcessDataFrame=preProcessDataFrame, viewName=viewName)
+            self. __CacheDataFrame(dfX, dataType, modelName, 'X')
+            self. __CacheDataFrame(dfY, dataType, modelName, 'Y')
+            self. __CacheDataFrame(dfDataID, dataType, modelName, 'DataID')
+        else:
+            dfX = self.__GetDataFrameFromCache(dataType, modelName, 'X')
+            dfDataID = self.__GetDataFrameFromCache(dataType, modelName, 'DataID')
+
+        print '  ' + dataType + '_X = ' + str(dfX.shape)
+        print '  ' + dataType + '_Y = ' + str(dfY.shape)
+        print '  ' + dataType + '_DataID = ' + str(dfDataID.shape)
+
+        return (dfX, dfY, dfDataID)
+
+    def __GetDataFrameFromCache(self, dataType, modelName, matrixType):
+        fileUNC = self.CacheFolderUNC + dataType + '_' + matrixType + '_' + modelName + '.tab'
+        if (os.path.isfile(fileUNC)):
+            print '  Read from cache: ' + fileUNC
+            df = pd.read_csv(fileUNC, sep='\t')
+        else:
+            df = None
+
+        return df
+
+    def __CacheDataFrame(self, df, dataType, modelName, matrixType):
+        fileUNC = self.CacheFolderUNC + dataType + '_' + matrixType + '_' + modelName + '.tab'
+        print '  Write to cache: ' + fileUNC
+        df.to_csv(fileUNC, sep='\t', index=False)
+

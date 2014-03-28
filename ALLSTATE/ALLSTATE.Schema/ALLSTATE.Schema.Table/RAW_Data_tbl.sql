@@ -19,7 +19,7 @@ CREATE TABLE dbo.RAW_Data
     ,[CustomerId] INT NOT NULL                  -- 97,009 Customers. Example: 10000001
     ,[ShoppingPt] SMALLINT NOT NULL             -- 1,2,…13 
     ,[RecordType] TINYINT NOT NULL              -- 0,1
-    ,[Day] TINYINT NOT NULL                     -- 0,1,…6
+    ,[Day] TINYINT NOT NULL                     -- 0=MON,…5=SAT,6=SUN, Day of Week
     ,[Time] DATETIME NOT NULL                   -- 00:01…23:59
     ,[State] CHAR(2) NOT NULL                   -- "AL", …"WY"
     ,[Location] INT NULL                        -- 10001,10002,…16580,NA
